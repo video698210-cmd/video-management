@@ -3,147 +3,224 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>إدارة ومراجعة الفيديوهات</title>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,sans-serif}
-body{background:#0f172a;color:#f8fafc;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+body{background:#0f172a;color:#f8fafc;min-height:100vh}
 #login-screen{position:fixed;inset:0;background:#0f172a;display:flex;justify-content:center;align-items:center;z-index:1000}
-.login-card{background:#1e293b;padding:40px;border-radius:12px;border:1px solid #334155;width:420px;max-width:94vw;box-shadow:0 10px 25px #0008;text-align:center}
-.login-card h2,.sidebar-header h3{color:#38bdf8;margin-bottom:25px;font-size:22px}
-.form-group{margin-bottom:20px;text-align:right}.form-group label,.info-group label{display:block;font-size:13px;color:#94a3b8;margin-bottom:8px}
-.form-control,.input-editable{width:100%;padding:12px;background:#0f172a;border:1px solid #334155;color:white;border-radius:6px;font-size:14px}
-.btn-login,.btn-action{width:100%;background:#0284c7;color:white;border:0;padding:12px;font-weight:bold;border-radius:6px;cursor:pointer;margin-bottom:10px}
-.btn-login:hover,.btn-action:hover{background:#0369a1}.btn-danger{background:#dc2626}.btn-danger:hover{background:#b91c1c}
-.admin-login-link{margin-top:15px;display:block;color:#38bdf8;font-size:13px;cursor:pointer;text-decoration:underline}
-#app-screen{display:none;height:100vh;width:100%}.sidebar{width:420px;max-width:45vw;background:#1e293b;border-left:1px solid #334155;display:flex;flex-direction:column;justify-content:space-between;padding:25px;box-shadow:-5px 0 15px #0005;overflow-y:auto}
-.sidebar-header h3{font-size:18px;border-bottom:2px solid #334155;padding-bottom:10px;margin-bottom:20px}
-.info-group{margin-bottom:18px}.info-value{width:100%;font-size:15px;font-weight:bold;color:#e2e8f0;background:#0f172a;padding:10px;border-radius:6px;border:1px solid #334155}
-.control-panel{margin-top:15px;border-top:1px solid #334155;padding-top:15px}
-.footer-credit{text-align:center;font-size:12px;color:#64748b;border-top:1px solid #334155;padding-top:12px;margin-top:20px}.footer-credit span{color:#38bdf8;font-weight:600}
-.main-content{flex:1;background:#0f172a;display:flex;justify-content:center;align-items:center;padding:30px;min-width:0}
-.video-container{width:100%;max-width:1100px;height:82vh;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 10px 30px #0008;border:1px solid #334155;position:relative;display:flex;justify-content:center;align-items:center}
-video{width:100%;height:100%;object-fit:contain}.video-placeholder{color:#64748b;text-align:center}
-.video-item-card,.company-list-item{background:#0f172a;border:1px solid #334155;padding:10px;border-radius:6px;margin-bottom:8px;cursor:pointer;font-size:13px}
-.video-item-card:hover,.video-item-card.active{border-color:#38bdf8;background:#0369a1}
-.modal{display:none;position:fixed;inset:0;background:#000b;justify-content:center;align-items:center;z-index:2000}.modal-content{background:#1e293b;padding:30px;border-radius:10px;width:550px;max-width:94vw;border:1px solid #334155;max-height:90vh;overflow-y:auto}
-.status{font-size:11px;padding:3px 7px;border-radius:4px;background:#334155}.approved{color:#4ade80}.rejected{color:#f87171}.pending{color:#fbbf24}
-.small{font-size:11px;color:#94a3b8}.row{display:flex;gap:8px}.row>*{flex:1}
-@media(max-width:800px){body{height:auto;min-height:100vh;overflow:auto}#app-screen{height:auto;min-height:100vh;flex-direction:column}.sidebar{width:100%;max-width:none;order:2}.main-content{min-height:55vh;padding:12px}.video-container{height:55vh}}
+.card{background:#1e293b;padding:32px;border-radius:12px;border:1px solid #334155;width:420px;max-width:94vw;text-align:center}
+h2,h3{color:#38bdf8;margin-bottom:18px}
+.fg{margin-bottom:14px;text-align:right}.fg label,.lbl{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px}
+.fc{width:100%;padding:11px;background:#0f172a;border:1px solid #334155;color:#fff;border-radius:6px;font-size:14px}
+.btn{width:100%;background:#0284c7;color:#fff;border:0;padding:11px;font-weight:bold;border-radius:6px;cursor:pointer;margin-bottom:8px}
+.btn:hover{background:#0369a1}.btn:disabled{opacity:.6}.danger{background:#dc2626}.danger:hover{background:#b91c1c}.ok{background:#15803d}
+.credit{text-align:center;font-size:12px;color:#64748b;border-top:1px solid #334155;padding-top:10px;margin-top:16px}.credit span{color:#38bdf8;font-weight:600}
+#app{display:none;min-height:100vh}
+.side{width:400px;max-width:45vw;background:#1e293b;border-left:1px solid #334155;padding:20px;display:flex;flex-direction:column;justify-content:space-between;overflow-y:auto;height:100vh;position:fixed;right:0;top:0}
+.main{margin-right:400px;padding:24px;min-height:100vh;display:flex;justify-content:center;align-items:center}
+.player{width:100%;max-width:1000px;height:78vh;background:#000;border:1px solid #334155;border-radius:12px;overflow:hidden;display:flex;justify-content:center;align-items:center}
+.player iframe{width:100%;height:100%;border:0}.ph{color:#64748b;text-align:center}
+.box{background:#0f172a;border:1px solid #334155;border-radius:6px;padding:10px;font-size:14px;font-weight:bold;margin-bottom:14px}
+.sec{border-top:1px solid #334155;padding-top:14px;margin-top:14px}
+.item{background:#0f172a;border:1px solid #334155;padding:10px;border-radius:6px;margin-bottom:8px;cursor:pointer;font-size:13px}
+.item:hover,.item.active{border-color:#38bdf8;background:#0c4a6e}.small{font-size:11px;color:#94a3b8;margin-top:4px}
+.st-approved{color:#4ade80}.st-rejected{color:#f87171}.st-pending{color:#fbbf24}
+.bar{height:8px;background:#334155;border-radius:4px;overflow:hidden;margin-top:8px}.bar>div{height:100%;background:#38bdf8}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.modal{display:none;position:fixed;inset:0;background:#000b;justify-content:center;align-items:center;z-index:2000}
+.mc{background:#1e293b;padding:24px;border-radius:10px;width:520px;max-width:94vw;max-height:90vh;overflow-y:auto;border:1px solid #334155}
+.urow{display:flex;justify-content:space-between;align-items:center;gap:6px;background:#0f172a;border:1px solid #334155;padding:8px;border-radius:6px;margin-bottom:6px;font-size:13px}
+.urow button{width:auto;padding:5px 9px;font-size:12px;margin:0}
+@media(max-width:800px){.side{position:static;width:100%;max-width:none;height:auto;order:2}.main{margin-right:0;padding:10px;min-height:50vh}.player{height:50vh}#app{display:none;flex-direction:column}}
 </style></head>
 <body>
-<div id="login-screen"><div class="login-card">
-<h2 id="login-title">تسجيل دخول المستخدمين (إدارة ومراجعة الفيديوهات)</h2>
-<div class="form-group" id="role-group"><label>اختر صفة المستخدم</label><select id="role-select" class="form-control"><option value="reviewer">مراجع الهيئة (بحث ومشاهدة)</option><option value="company_admin">مسؤول الشركة</option><option value="employee">موظف الشركة (رفع الإثباتات)</option></select></div>
-<div class="form-group"><label>اسم المستخدم</label><input id="username" class="form-control" placeholder="أدخل اسم المستخدم"></div>
-<div class="form-group"><label>كلمة المرور</label><input id="password" type="password" class="form-control" placeholder="أدخل كلمة المرور"></div>
-<button class="btn-login" onclick="handleLogin()">دخول النظام</button><a class="admin-login-link" onclick="switchToAdminLogin()" id="admin-toggle-btn">تسجيل دخول أدمن الهيئة (الرئيسي)</a>
-<div class="footer-credit">Designed By <span>Mohamed Gomaa</span></div>
+<div id="login-screen"><div class="card">
+<h2>إدارة ومراجعة الفيديوهات</h2>
+<div class="fg"><label>اسم المستخدم</label><input id="username" class="fc" autocomplete="username"></div>
+<div class="fg"><label>كلمة المرور</label><input id="password" type="password" class="fc" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"></div>
+<button class="btn" id="login-btn" onclick="login()">دخول النظام</button>
+<div class="credit">Designed By <span>Mohamed Gomaa</span></div>
 </div></div>
-<div id="app-screen">
-<aside class="sidebar"><div>
-<div class="sidebar-header"><h3 id="panel-title">لوحة التحكم والإثباتات</h3></div>
-<div class="info-group" id="reviewer-search-box" style="display:none"><label style="color:#38bdf8">بحث مباشر برقم الطلب</label><input id="search-req-input" class="input-editable" placeholder="اكتب رقم الطلب للبحث..." oninput="searchCloudVideos()"></div>
-<div class="info-group" id="videos-list-section" style="display:none"><label style="color:#38bdf8">فيديوهات الإثبات</label><div id="request-videos-container" style="max-height:180px;overflow:auto"></div></div>
-<div class="info-group"><label>رقم الطلب / المشروع</label><input id="req-number-field" class="input-editable" placeholder="رقم الطلب"></div>
-<div class="info-group"><label>الشركة المنفذة</label><div class="info-value" id="display-company-name">GeoJobs Master</div></div>
-<div class="info-group"><label>حالة الملف</label><div class="info-value" id="file-status-text">جاهز</div></div>
-<div class="info-group" id="storage-info"><label>مساحة Google Drive</label><div class="info-value" id="storage-text">لم يتم ربط خدمة التخزين بعد</div><div class="small" id="storage-detail">يتم تحديث بيانات التخزين من Google Drive.</div></div>
-<div class="control-panel" id="admin-controls" style="display:none"><label style="color:#38bdf8;display:block;margin-bottom:8px">لوحة تحكم الأدمن</label><button class="btn-action" onclick="openAdminCompanyManager()">⚙️ إدارة حسابات الشركات</button></div>
-<div class="control-panel" id="company-controls" style="display:none"><label style="color:#38bdf8;display:block;margin-bottom:8px">إدارة الشركة</label><button class="btn-action" onclick="openEmployeeModal()">+ إنشاء يوزر لموظف جديد</button></div>
-<div class="control-panel" id="employee-controls" style="display:none"><label style="color:#38bdf8;display:block;margin-bottom:8px">رفع ملفات الإثبات</label><input type="file" id="file-upload" accept="video/*" class="form-control" style="margin-bottom:10px"><button class="btn-action" onclick="uploadVideo()">رفع الفيديو</button></div>
-<div class="control-panel" id="review-controls" style="display:none"><label style="color:#38bdfb;display:block;margin-bottom:8px">قرار المراجعة</label><input id="reviewer-name" class="form-control" placeholder="اسم المراجع" style="margin-bottom:8px"><textarea id="review-note" class="form-control" placeholder="ملاحظات المراجع" rows="2" style="margin-bottom:8px"></textarea><div class="row"><button class="btn-action" style="background:#15803d" onclick="setReviewStatus('approved')">اعتماد الفيديو</button><button class="btn-action btn-danger" onclick="setReviewStatus('rejected')">رفض الفيديو</button></div><div class="small" id="review-meta"></div></div>
-</div><div><button class="btn-action btn-danger" onclick="logoutSystem()">تسجيل الخروج</button><div class="footer-credit">Designed By <span>Mohamed Gomaa</span></div></div></aside>
-<main class="main-content"><div class="video-container"><div class="video-placeholder" id="video-placeholder">اختر فيديو من القائمة لبدء المشاهدة</div><video id="main-video" controls style="display:none"></video></div></main>
+
+<div id="app">
+<aside class="side"><div>
+<h3 id="panel-title"></h3>
+<div class="lbl">المستخدم</div><div class="box" id="who"></div>
+
+<div id="search-sec" style="display:none"><div class="lbl" style="color:#38bdf8">بحث برقم الطلب (كل الشركات)</div>
+<input id="search-input" class="fc" placeholder="اكتب رقم الطلب..." oninput="debounceSearch()" style="margin-bottom:10px">
+<div id="results" style="max-height:220px;overflow:auto"></div></div>
+
+<div id="upload-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">رفع فيديو إثبات</div>
+<input id="req-number" class="fc" placeholder="رقم الطلب" style="margin-bottom:8px">
+<input type="file" id="file-upload" accept="video/*" class="fc" style="margin-bottom:8px">
+<button class="btn" id="upload-btn" onclick="uploadVideo()">رفع الفيديو</button>
+<div class="small" id="upload-status">الحد الأقصى 500 ميجا للفيديو</div></div>
+
+<div id="manage-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">الإدارة</div><div id="manage-btns"></div></div>
+
+<div id="review-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">قرار المراجعة</div>
+<div class="box" id="review-who"></div>
+<textarea id="review-note" class="fc" rows="2" placeholder="ملاحظات المراجع" style="margin-bottom:8px"></textarea>
+<div class="row"><button class="btn ok" onclick="review('approved')">اعتماد</button><button class="btn danger" onclick="review('rejected')">رفض</button></div>
+<div class="small" id="review-meta"></div></div>
+
+<div id="storage-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">مساحة التخزين (Google Drive)</div>
+<div class="box" id="storage-text">...</div><div class="bar"><div id="storage-bar" style="width:0"></div></div><div class="small" id="storage-detail"></div></div>
 </div>
-<div class="modal" id="admin-company-modal"><div class="modal-content"><h3 style="color:#38bdf8;margin-bottom:15px">إدارة حسابات الشركات</h3><div class="form-group"><label>اسم الشركة</label><input id="adm-comp-name" class="form-control"></div><div class="form-group"><label>اسم المستخدم</label><input id="adm-comp-user" class="form-control"></div><div class="form-group"><label>كلمة المرور</label><input id="adm-comp-pass" type="password" class="form-control"></div><button class="btn-action" onclick="addNewCompanyCloud()">حفظ وإضافة الشركة</button><div id="companies-list-container"></div><button class="btn-action btn-danger" onclick="closeAdminCompanyManager()">إغلاق</button></div></div>
-<div class="modal" id="employee-modal"><div class="modal-content"><h3 style="color:#38bdf8;margin-bottom:15px">إنشاء يوزر موظف</h3><div class="form-group"><label>اسم الموظف</label><input id="emp-name-modal" class="form-control"></div><div class="form-group"><label>اسم المستخدم</label><input id="emp-user-modal" class="form-control"></div><div class="form-group"><label>كلمة المرور</label><input id="emp-pass-modal" type="password" class="form-control"></div><button class="btn-action" onclick="saveNewEmployeeCloud()">حفظ يوزر الموظف</button><div id="employees-list-container"></div><button class="btn-action btn-danger" onclick="closeEmployeeModal()">إغلاق</button></div></div>
+<div><button class="btn danger" onclick="logout()">تسجيل الخروج</button><div class="credit">Designed By <span>Mohamed Gomaa</span></div></div>
+</aside>
+<main class="main"><div class="player"><div class="ph" id="ph">اختر فيديو من القائمة لبدء المشاهدة</div><iframe id="frame" allow="autoplay;fullscreen" allowfullscreen style="display:none"></iframe></div></main>
+</div>
+
+<div class="modal" id="modal"><div class="mc">
+<h3 id="m-title"></h3>
+<div class="fg"><label id="m-name-l">الاسم</label><input id="m-name" class="fc"></div>
+<div class="fg"><label>اسم المستخدم (إنجليزي)</label><input id="m-user" class="fc"></div>
+<div class="fg"><label>كلمة المرور (6 أحرف على الأقل)</label><input id="m-pass" type="text" class="fc"></div>
+<button class="btn" onclick="createUser()">حفظ</button>
+<div id="m-list" style="margin:10px 0"></div>
+<button class="btn danger" onclick="closeModal()">إغلاق</button>
+</div></div>
+
 <script>
-const DRIVE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwQc9rhWhr67-zU1GZSr7gZoYjhJwDXiJnNXqxTjJej_q8HNuxgOCcD9c64FYJqtSs/exec";
-/* ضع إعدادات Firebase العامة هنا من إعدادات مشروعك. لا تضع مفاتيح OAuth السرية في هذا الملف. */
-const firebaseConfig={
-  apiKey:"AIzaSyDURQ9Q18nzY2fW1QrqIIqee1U1E-zxiT4",
-  authDomain:"geojobs-project-1.firebaseapp.com",
-  projectId:"geojobs-project-1",
-  storageBucket:"geojobs-project-1.firebasestorage.app",
-  messagingSenderId:"234894013951",
-  appId:"1:234894013951:web:aa8c15e01e83015ce863ca",
-  measurementId:"G-SRGV2298E0"
-};
-let db=null,adminMode=false,currentRole=null,currentCompany=null,selectedVideo=null;
-const ADMIN_USERNAME="mohamed_gomaa",ADMIN_PASSWORD="MG@01002267681";
-try{if(firebaseConfig.apiKey!=="YOUR_API_KEY"){firebase.initializeApp(firebaseConfig);db=firebase.firestore();}}catch(e){console.error(e)}
-async function refreshDriveStorage(){
-  const textEl=document.getElementById('storage-text'),detail=document.getElementById('storage-detail');
-  try{
-    const r=await fetch(DRIVE_WEB_APP_URL+'?action=storage',{method:'GET'});
-    const d=await r.json();
-    if(!d.success)throw new Error(d.error||'تعذر قراءة المساحة');
-    const gb=n=>(Number(n||0)/1024/1024/1024);
-    textEl.textContent=`المستخدم ${gb(d.usedBytes).toFixed(2)} جيجا من ${gb(d.limitBytes).toFixed(2)} جيجا`;
-    detail.textContent=`المتبقي التقريبي: ${gb(d.freeBytes).toFixed(2)} جيجا`;
-  }catch(e){textEl.textContent='تعذر قراءة مساحة Drive';detail.textContent='تأكد من تحديث ونشر كود Apps Script المرفق.';console.warn(e)}
+/* ضع هنا رابط Web App الناتج من Apps Script (ينتهي بـ /exec) */
+const API = "https://script.google.com/macros/s/AKfycbzFjL2Yyo7oyiVAxoz8jCq9G2wZtcbkXRlzeAPm1m54kxz-rsHpUFYwx_3tvknxu7U/exec";
+const MAX = 500 * 1024 * 1024;
+const $ = id => document.getElementById(id);
+let S = null, selected = null, modalRole = null, timer = null;
+try { S = JSON.parse(sessionStorage.getItem('gj') || 'null'); } catch (e) {}
+
+async function api(action, data = {}) {
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, token: S && S.token, ...data }) });
+  let d; try { d = await r.json(); } catch (e) { throw new Error('رد غير صالح من السيرفر: تأكد أن رابط API صحيح وينتهي بـ /exec وأنك نشرت نسخة جديدة'); }
+  if (!d.ok) { if (d.error === 'SESSION') { sessionStorage.removeItem('gj'); alert('انتهت الجلسة، سجّل الدخول من جديد'); location.reload(); } throw new Error(d.error); }
+  return d;
 }
-function switchToAdminLogin(){adminMode=!adminMode;document.getElementById('role-group').style.display=adminMode?'none':'block';document.getElementById('login-title').textContent=adminMode?'تسجيل دخول أدمن الهيئة':'تسجيل دخول المستخدمين (إدارة ومراجعة الفيديوهات)';document.getElementById('admin-toggle-btn').textContent=adminMode?'العودة لتسجيل دخول المستخدمين':'تسجيل دخول أدمن الهيئة (الرئيسي)';}
-function showApp(role,name){currentRole=role;document.getElementById('login-screen').style.display='none';document.getElementById('app-screen').style.display='flex';document.getElementById('panel-title').textContent=role==='reviewer'?'بوابة مراجعة الفيديوهات':role==='admin'?'لوحة تحكم الأدمن':role==='employee'?'رفع الإثباتات':'إدارة الشركة';document.getElementById('display-company-name').textContent=name||'GeoJobs Master';refreshDriveStorage();['admin-controls','company-controls','employee-controls','reviewer-search-box','videos-list-section','review-controls'].forEach(id=>document.getElementById(id).style.display='none');if(role==='admin')document.getElementById('admin-controls').style.display='block';if(role==='company_admin')document.getElementById('company-controls').style.display='block';if(role==='employee')document.getElementById('employee-controls').style.display='block';if(role==='reviewer'||role==='admin'){document.getElementById('reviewer-search-box').style.display='block';document.getElementById('videos-list-section').style.display='block';document.getElementById('review-controls').style.display='block';}}
-async function handleLogin(){const u=username.value.trim(),p=password.value;if(adminMode){if(u===ADMIN_USERNAME&&p===ADMIN_PASSWORD)return showApp('admin','أدمن الهيئة');alert('بيانات الأدمن غير صحيحة');return}if(!db){alert('يجب أولًا وضع إعدادات Firebase الصحيحة في الكود.');return}const role=document.getElementById('role-select').value;try{if(role==='reviewer'){alert('يلزم ربط المراجعين بنظام Firebase Authentication قبل تفعيل الدخول.');return}const col=role==='company_admin'?'companies':'employees',snap=await db.collection(col).doc(u).get();if(!snap.exists){alert('اسم المستخدم غير مسجل');return}const d=snap.data();if(d.isActive===false){alert('الحساب موقوف');return}if(d.password!==p){alert('كلمة المرور غير صحيحة');return}currentCompany=role==='employee'?d.companyName:d.name;showApp(role,role==='employee'?d.companyName:d.name)}catch(e){alert('تعذر تسجيل الدخول: '+e.message)}}
-function logoutSystem(){location.reload()}
-async function uploadVideo(){
-  if(!db)return alert('إعداد Firebase غير مكتمل');
-  const input=document.getElementById('file-upload');
-  const f=input.files[0],req=document.getElementById('req-number-field').value.trim();
-  if(!f||!req)return alert('اختر فيديو وأدخل رقم الطلب');
-  if(!f.type.startsWith('video/'))return alert('الملف المختار ليس فيديو');
-  if(f.size>25*1024*1024)return alert('حجم الفيديو أكبر من 25 ميجابايت حسب حد سكربت التخزين الحالي');
-  if(!currentCompany)return alert('تعذر تحديد الشركة المسجل دخولها');
-  const status=document.getElementById('file-status-text');
-  const btn=document.querySelector('#employee-controls button');
-  btn.disabled=true;btn.textContent='جارٍ تجهيز الفيديو...';
-  try{
-    const base64=await new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onerror=()=>reject(new Error('تعذرت قراءة ملف الفيديو'));
-      reader.onload=()=>resolve(String(reader.result).split(',')[1]);
-      reader.readAsDataURL(f);
-    });
-    status.textContent='جارٍ رفع الفيديو إلى Google Drive...';
-    const response=await fetch(DRIVE_WEB_APP_URL,{
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({fileName:f.name,mimeType:f.type||'video/mp4',base64})
-    });
-    if(!response.ok)throw new Error('استجابة خادم التخزين: '+response.status);
-    const result=await response.json();
-    if(!result.success)throw new Error(result.error||'فشل رفع الفيديو');
-    status.textContent='تم رفع الفيديو إلى Drive، جارٍ حفظ بياناته...';
-    const record={
-      reqNumber:req,companyName:currentCompany,fileName:result.fileName||f.name,
-      fileId:result.fileId,fileUrl:result.downloadUrl||result.fileUrl,
-      driveViewUrl:result.fileUrl,storageProvider:'google-drive',
-      sizeBytes:f.size,mimeType:f.type||'video/mp4',
-      status:'pending',uploadedAt:firebase.firestore.FieldValue.serverTimestamp(),
-      date:new Date().toLocaleString('ar-EG')
-    };
-    const doc=await db.collection('videos').add(record);
-    selectedVideo={id:doc.id,...record};
-    input.value='';
-    status.textContent='تم رفع الفيديو وحفظ بياناته بنجاح';
-    alert('تم رفع الفيديو إلى Google Drive وحفظ بيانات الطلب. حالة الفيديو: قيد المراجعة.');
-    await refreshDriveStorage();
-  }catch(e){
-    console.error(e);
-    status.textContent='تعذر إكمال الرفع';
-    alert('فشل الربط أو الرفع: '+e.message+'\nإذا ظهر خطأ CORS، يلزم تعديل طريقة استدعاء Apps Script أو استخدام وسيط خادمي.');
-  }finally{btn.disabled=false;btn.textContent='رفع الفيديو';}
+async function login() {
+  const b = $('login-btn'); b.disabled = true;
+  try { const d = await api('login', { username: $('username').value.trim(), password: $('password').value }); S = { token: d.token, user: d.user }; sessionStorage.setItem('gj', JSON.stringify(S)); start(); }
+  catch (e) { alert(e.message); } finally { b.disabled = false; }
 }
-async function searchCloudVideos(){if(!db)return;const q=document.getElementById('search-req-input').value.trim(),box=document.getElementById('request-videos-container');box.innerHTML='';if(!q)return;try{const s=await db.collection('videos').where('reqNumber','==',q).get();if(s.empty){box.textContent='لا توجد فيديوهات لهذا الطلب';return}s.forEach(doc=>{const v={id:doc.id,...doc.data()},el=document.createElement('div');el.className='video-item-card';el.textContent=(v.fileName||'فيديو')+' — '+(v.status||'pending');el.onclick=()=>selectVideo(v,el);box.appendChild(el)})}catch(e){box.textContent='خطأ في البحث: '+e.message}}
-function selectVideo(v,el){selectedVideo=v;document.querySelectorAll('.video-item-card').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.getElementById('req-number-field').value=v.reqNumber||'';document.getElementById('display-company-name').textContent=v.companyName||'';const video=document.getElementById('main-video'),ph=document.getElementById('video-placeholder');if(v.fileUrl){video.src=v.fileUrl;video.style.display='block';ph.style.display='none';video.load()}else{video.style.display='none';ph.style.display='block'}document.getElementById('review-meta').textContent=v.reviewedBy?`آخر مراجعة: ${v.reviewedBy} — ${v.reviewedAt||''} — ${v.status}`:'لم تتم مراجعة الفيديو بعد';}
-async function setReviewStatus(status){if(!db||!selectedVideo)return alert('اختر فيديو أولًا وتأكد من إعداد Firebase');const reviewer=document.getElementById('reviewer-name').value.trim();if(!reviewer)return alert('اكتب اسم المراجع');if(!['admin','reviewer'].includes(currentRole))return alert('ليس لديك صلاحية المراجعة');try{const payload={status,reviewedBy:reviewer,reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),reviewNote:document.getElementById('review-note').value.trim()};await db.collection('videos').doc(selectedVideo.id).update(payload);selectedVideo={...selectedVideo,...payload,reviewedAt:new Date().toLocaleString('ar-EG')};document.getElementById('review-meta').textContent=`تم ${status==='approved'?'اعتماد':'رفض'} الفيديو بواسطة ${reviewer} — ${new Date().toLocaleString('ar-EG')}`;alert('تم حفظ قرار المراجعة');searchCloudVideos()}catch(e){alert('تعذر حفظ القرار: '+e.message)}}
-async function openAdminCompanyManager(){document.getElementById('admin-company-modal').style.display='flex';if(db){const box=document.getElementById('companies-list-container');box.textContent='جارٍ التحميل...';const s=await db.collection('companies').get();box.innerHTML='';s.forEach(d=>{const v=d.data(),el=document.createElement('div');el.className='company-list-item';el.textContent=`${v.name} (${v.username})`;box.appendChild(el)})}}
-function closeAdminCompanyManager(){document.getElementById('admin-company-modal').style.display='none'}
-async function addNewCompanyCloud(){if(!db)return alert('إعداد Firebase غير مكتمل');const name=document.getElementById('adm-comp-name').value.trim(),user=document.getElementById('adm-comp-user').value.trim(),pass=document.getElementById('adm-comp-pass').value;if(!name||!user||!pass)return alert('أكمل الحقول');try{await db.collection('companies').doc(user).set({name,username:user,password:pass,isActive:true});alert('تمت إضافة الشركة');openAdminCompanyManager()}catch(e){alert(e.message)}}
-function openEmployeeModal(){document.getElementById('employee-modal').style.display='flex';loadEmployees()}
-function closeEmployeeModal(){document.getElementById('employee-modal').style.display='none'}
-async function saveNewEmployeeCloud(){if(!db||!currentCompany)return alert('تعذر تحديد الشركة');const name=document.getElementById('emp-name-modal').value.trim(),user=document.getElementById('emp-user-modal').value.trim(),pass=document.getElementById('emp-pass-modal').value;if(!name||!user||!pass)return alert('أكمل الحقول');try{await db.collection('employees').doc(user).set({name,username:user,password:pass,companyName:currentCompany});alert('تم إنشاء الموظف');loadEmployees()}catch(e){alert(e.message)}}
-async function loadEmployees(){const box=document.getElementById('employees-list-container');box.innerHTML='';if(!db||!currentCompany)return;const s=await db.collection('employees').where('companyName','==',currentCompany).get();s.forEach(d=>{const e=d.data(),el=document.createElement('div');el.className='company-list-item';el.textContent=`${e.name} (${e.username})`;box.appendChild(el)})}
+function logout() { sessionStorage.removeItem('gj'); location.reload(); }
+
+const TITLES = { admin: 'لوحة تحكم الأدمن', reviewer: 'بوابة مراجعة الفيديوهات', company_admin: 'إدارة الشركة', employee: 'رفع الإثباتات' };
+function start() {
+  const u = S.user, r = u.role;
+  $('login-screen').style.display = 'none'; $('app').style.display = 'flex';
+  $('panel-title').textContent = TITLES[r];
+  $('who').textContent = u.name + (u.company && r !== 'company_admin' ? ' — ' + u.company : '');
+  $('search-sec').style.display = 'block';
+  $('upload-sec').style.display = r === 'employee' ? 'block' : 'none';
+  $('review-sec').style.display = (r === 'admin' || r === 'reviewer') ? 'block' : 'none';
+  $('review-who').textContent = 'سيُسجَّل القرار باسم: ' + u.name;
+  $('storage-sec').style.display = r === 'employee' ? 'none' : 'block';
+  const m = $('manage-btns'); m.innerHTML = '';
+  const add = (t, f) => { const x = document.createElement('button'); x.className = 'btn'; x.textContent = t; x.onclick = f; m.appendChild(x); };
+  if (r === 'admin') { add('⚙️ إدارة حسابات الشركات', () => openModal('company_admin')); add('👤 إدارة حسابات المراجعين', () => openModal('reviewer')); }
+  if (r === 'company_admin') add('+ إدارة حسابات الموظفين', () => openModal('employee'));
+  $('manage-sec').style.display = m.children.length ? 'block' : 'none';
+  if (r !== 'employee') loadStorage();
+  search();
+}
+function debounceSearch() { clearTimeout(timer); timer = setTimeout(search, 350); }
+
+async function search() {
+  const box = $('results'); box.textContent = 'جارٍ البحث...';
+  try {
+    const d = await api('search', { q: $('search-input').value.trim() });
+    box.innerHTML = '';
+    if (!d.videos.length) { box.textContent = 'لا توجد فيديوهات'; return; }
+    d.videos.forEach(v => {
+      const el = document.createElement('div'); el.className = 'item' + (selected && selected.id === v.id ? ' active' : '');
+      const t = document.createElement('div'); t.textContent = 'طلب ' + v.req + ' — ' + v.company;
+      const s = document.createElement('div'); s.className = 'small';
+      const st = document.createElement('span'); st.className = 'st-' + v.status; st.textContent = { approved: 'معتمد', rejected: 'مرفوض', pending: 'قيد المراجعة', deleted: 'محذوف تلقائيًا' }[v.status] || v.status;
+      s.append(st, ' — ' + v.employee + ' — ' + v.uploadedAt);
+      el.append(t, s); el.onclick = () => pick(v, el); box.appendChild(el);
+    });
+  } catch (e) { box.textContent = 'خطأ: ' + e.message; }
+}
+function pick(v, el) {
+  selected = v;
+  document.querySelectorAll('.item').forEach(x => x.classList.remove('active')); el.classList.add('active');
+  if (v.fileId) { $('frame').src = 'https://drive.google.com/file/d/' + encodeURIComponent(v.fileId) + '/preview'; $('frame').style.display = 'block'; $('ph').style.display = 'none'; }
+  else { $('frame').style.display = 'none'; $('ph').style.display = 'block'; $('ph').textContent = 'هذا الفيديو تم حذفه تلقائيًا لتوفير مساحة التخزين'; }
+  $('review-note').value = v.note || '';
+  $('review-meta').textContent = v.reviewer ? 'آخر قرار: ' + ({ approved: 'اعتماد', rejected: 'رفض' }[v.status]) + ' بواسطة ' + v.reviewer + ' — ' + v.reviewedAt : 'لم تتم مراجعة الفيديو بعد';
+}
+async function review(status) {
+  if (!selected) return alert('اختر فيديو أولًا');
+  try { const d = await api('review', { id: selected.id, status, note: $('review-note').value.trim() });
+    $('review-meta').textContent = (status === 'approved' ? 'تم الاعتماد' : 'تم الرفض') + ' بواسطة ' + d.reviewer + ' — ' + d.reviewedAt;
+    selected = { ...selected, status, reviewer: d.reviewer, reviewedAt: d.reviewedAt }; search();
+  } catch (e) { alert(e.message); }
+}
+
+async function loadStorage() {
+  try {
+    const d = await api('storage'), gb = n => (n / 1073741824).toFixed(2), mb = n => (n / 1048576).toFixed(1);
+    $('storage-text').textContent = 'المستخدم ' + gb(d.used) + ' من ' + gb(d.limit) + ' جيجا';
+    $('storage-bar').style.width = Math.min(100, d.used / d.limit * 100) + '%';
+    $('storage-detail').textContent = 'المتبقي: ' + gb(d.limit - d.used) + ' جيجا — فيديوهات النظام: ' + d.videosCount + ' (' + mb(d.videosBytes) + ' ميجا)';
+  } catch (e) { $('storage-text').textContent = 'تعذر قراءة المساحة'; }
+}
+
+const CHUNK = 1572864; /* 6 x 256KB */
+function b64(blob) { return new Promise((res, rej) => { const r = new FileReader(); r.onerror = () => rej(new Error('تعذرت قراءة الملف')); r.onload = () => res(String(r.result).split(',')[1]); r.readAsDataURL(blob); }); }
+async function sendChunk(uploadId, f, start, tries = 4) {
+  const end = Math.min(start + CHUNK, f.size), data = await b64(f.slice(start, end));
+  for (let i = 1; ; i++) {
+    try { return await api('uploadChunk', { uploadId, start, data }); }
+    catch (e) { if (i >= tries || /انتهت جلسة|غير مصرح/.test(e.message)) throw e; await new Promise(r => setTimeout(r, 1500 * i)); }
+  }
+}
+async function uploadVideo() {
+  const f = $('file-upload').files[0], req = $('req-number').value.trim(), st = $('upload-status'), btn = $('upload-btn');
+  if (!f || !req) return alert('اختر فيديو وأدخل رقم الطلب');
+  if (!f.type.startsWith('video/')) return alert('الملف ليس فيديو');
+  if (f.size > MAX) return alert('حجم الفيديو أكبر من 500 ميجا');
+  btn.disabled = true;
+  try {
+    st.textContent = 'جارٍ التجهيز...';
+    const { uploadId } = await api('initUpload', { req, size: f.size, fileName: f.name, mimeType: f.type || 'video/mp4' });
+    let fileId = null;
+    for (let start = 0; start < f.size; start += CHUNK) {
+      st.textContent = 'جارٍ الرفع إلى Drive... ' + Math.round(start / f.size * 100) + '%';
+      const r = await sendChunk(uploadId, f, start);
+      if (r.done) fileId = r.fileId;
+    }
+    if (!fileId) throw new Error('Drive لم يؤكد اكتمال الرفع');
+    st.textContent = 'جارٍ الحفظ...';
+    await api('finishUpload', { fileId, req });
+    st.textContent = 'تم رفع الفيديو بنجاح — الحالة: قيد المراجعة';
+    $('file-upload').value = ''; $('search-input').value = req; search();
+  } catch (e) { st.textContent = 'فشل الرفع: ' + e.message; alert('فشل الرفع: ' + e.message); }
+  finally { btn.disabled = false; }
+}
+
+const MT = { company_admin: ['إدارة حسابات الشركات', 'اسم الشركة'], reviewer: ['إدارة حسابات المراجعين', 'اسم المراجع'], employee: ['إدارة حسابات الموظفين', 'اسم الموظف'] };
+function openModal(role) { modalRole = role; $('m-title').textContent = MT[role][0]; $('m-name-l').textContent = MT[role][1]; ['m-name', 'm-user', 'm-pass'].forEach(i => $(i).value = ''); $('modal').style.display = 'flex'; loadUsers(); }
+function closeModal() { $('modal').style.display = 'none'; }
+async function createUser() {
+  try { await api('createUser', { role: modalRole, name: $('m-name').value, username: $('m-user').value, password: $('m-pass').value });
+    ['m-name', 'm-user', 'm-pass'].forEach(i => $(i).value = ''); loadUsers(); } catch (e) { alert(e.message); }
+}
+async function loadUsers() {
+  const box = $('m-list'); box.textContent = 'جارٍ التحميل...';
+  try {
+    const d = await api('listUsers'); box.innerHTML = '';
+    d.users.filter(u => u.role === modalRole).forEach(u => {
+      const el = document.createElement('div'); el.className = 'urow';
+      const t = document.createElement('span'); t.textContent = u.name + ' (' + u.username + ')' + (u.active ? '' : ' — موقوف');
+      const a = document.createElement('button'); a.className = 'btn ' + (u.active ? 'danger' : 'ok'); a.textContent = u.active ? 'إيقاف' : 'تفعيل';
+      a.onclick = async () => { try { await api('setActive', { username: u.username, active: !u.active }); loadUsers(); } catch (e) { alert(e.message); } };
+      const p = document.createElement('button'); p.className = 'btn'; p.textContent = 'كلمة مرور';
+      p.onclick = async () => { const np = prompt('كلمة المرور الجديدة'); if (!np) return; try { await api('resetPass', { username: u.username, password: np }); alert('تم التغيير'); } catch (e) { alert(e.message); } };
+      el.append(t, a, p); box.appendChild(el);
+    });
+    if (!box.children.length) box.textContent = 'لا توجد حسابات بعد';
+  } catch (e) { box.textContent = e.message; }
+}
+
+if (S) start();
 </script></body></html>
