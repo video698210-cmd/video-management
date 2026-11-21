@@ -24,6 +24,8 @@ h2,h3{color:#38bdf8;margin-bottom:18px}
 .item{background:#0f172a;border:1px solid #334155;padding:10px;border-radius:6px;margin-bottom:8px;cursor:pointer;font-size:13px}
 .item:hover,.item.active{border-color:#38bdf8;background:#0c4a6e}.small{font-size:11px;color:#94a3b8;margin-top:4px}
 .st-approved{color:#4ade80}.st-rejected{color:#f87171}.st-pending{color:#fbbf24}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}th,td{border-bottom:1px solid #334155;padding:7px 5px;text-align:right}th{color:#94a3b8;font-weight:600}
+.kpis{display:flex;gap:8px;margin:10px 0}.kpis>div{flex:1;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:10px;text-align:center}.kpis b{display:block;font-size:20px;color:#38bdf8}.kpis span{font-size:11px;color:#94a3b8}
 .bar{height:8px;background:#334155;border-radius:4px;overflow:hidden;margin-top:8px}.bar>div{height:100%;background:#38bdf8}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .modal{display:none;position:fixed;inset:0;background:#000b;justify-content:center;align-items:center;z-index:2000}
@@ -58,12 +60,6 @@ h2,h3{color:#38bdf8;margin-bottom:18px}
 
 <div id="manage-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">الإدارة</div><div id="manage-btns"></div></div>
 
-<div id="review-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">قرار المراجعة</div>
-<div class="box" id="review-who"></div>
-<textarea id="review-note" class="fc" rows="2" placeholder="ملاحظات المراجع" style="margin-bottom:8px"></textarea>
-<div class="row"><button class="btn ok" onclick="review('approved')">اعتماد</button><button class="btn danger" onclick="review('rejected')">رفض</button></div>
-<div class="small" id="review-meta"></div></div>
-
 <div id="storage-sec" class="sec" style="display:none"><div class="lbl" style="color:#38bdf8">مساحة التخزين (Google Drive)</div>
 <div class="box" id="storage-text">...</div><div class="bar"><div id="storage-bar" style="width:0"></div></div><div class="small" id="storage-detail"></div></div>
 </div>
@@ -74,12 +70,23 @@ h2,h3{color:#38bdf8;margin-bottom:18px}
 
 <div class="modal" id="modal"><div class="mc">
 <h3 id="m-title"></h3>
+<div id="m-form">
 <div class="fg"><label id="m-name-l">الاسم</label><input id="m-name" class="fc"></div>
 <div class="fg"><label>اسم المستخدم (إنجليزي)</label><input id="m-user" class="fc"></div>
 <div class="fg"><label>كلمة المرور (6 أحرف على الأقل)</label><input id="m-pass" type="text" class="fc"></div>
 <button class="btn" onclick="createUser()">حفظ</button>
+</div>
+<div class="small" id="m-count"></div>
 <div id="m-list" style="margin:10px 0"></div>
 <button class="btn danger" onclick="closeModal()">إغلاق</button>
+</div></div>
+
+<div class="modal" id="dash"><div class="mc" style="width:720px">
+<h3>📊 لوحة المتابعة</h3>
+<div class="box" id="d-storage">...</div><div class="bar"><div id="d-bar" style="width:0"></div></div><div class="small" id="d-detail"></div>
+<div class="kpis"><div><b id="k-sent">0</b><span>فيديوهات مرفوعة</span></div><div><b id="k-stored">0</b><span>شركات لها فيديوهات</span></div><div><b id="k-mb">0</b><span>ميجا مستخدمة</span></div></div>
+<div style="overflow-x:auto"><table><thead><tr><th>الشركة</th><th>عدد الفيديوهات</th><th>الحجم (ميجا)</th></tr></thead><tbody id="d-rows"></tbody></table></div>
+<button class="btn danger" style="margin-top:12px" onclick="$('dash').style.display='none'">إغلاق</button>
 </div></div>
 
 <script>
@@ -111,15 +118,13 @@ function start() {
   $('who').textContent = u.name + (u.company && r !== 'company_admin' ? ' — ' + u.company : '');
   $('search-sec').style.display = 'block';
   $('upload-sec').style.display = r === 'employee' ? 'block' : 'none';
-  $('review-sec').style.display = (r === 'admin' || r === 'reviewer') ? 'block' : 'none';
-  $('review-who').textContent = 'سيُسجَّل القرار باسم: ' + u.name;
-  $('storage-sec').style.display = r === 'employee' ? 'none' : 'block';
+  $('storage-sec').style.display = r === 'admin' ? 'block' : 'none';
   const m = $('manage-btns'); m.innerHTML = '';
   const add = (t, f) => { const x = document.createElement('button'); x.className = 'btn'; x.textContent = t; x.onclick = f; m.appendChild(x); };
-  if (r === 'admin') { add('⚙️ إدارة حسابات الشركات', () => openModal('company_admin')); add('👤 إدارة حسابات المراجعين', () => openModal('reviewer')); }
+  if (r === 'admin') { add('⚙️ إدارة حسابات الشركات', () => openModal('company_admin')); add('👤 حساب المراجعين', () => openModal('reviewer')); add('📊 لوحة المتابعة', openDash); }
   if (r === 'company_admin') add('+ إدارة حسابات الموظفين', () => openModal('employee'));
   $('manage-sec').style.display = m.children.length ? 'block' : 'none';
-  if (r !== 'employee') loadStorage();
+  if (r === 'admin') loadStorage();
   search();
 }
 function debounceSearch() { clearTimeout(timer); timer = setTimeout(search, 350); }
@@ -134,8 +139,7 @@ async function search() {
       const el = document.createElement('div'); el.className = 'item' + (selected && selected.id === v.id ? ' active' : '');
       const t = document.createElement('div'); t.textContent = 'طلب ' + v.req + ' — ' + v.company;
       const s = document.createElement('div'); s.className = 'small';
-      const st = document.createElement('span'); st.className = 'st-' + v.status; st.textContent = { approved: 'معتمد', rejected: 'مرفوض', pending: 'قيد المراجعة', deleted: 'محذوف تلقائيًا' }[v.status] || v.status;
-      s.append(st, ' — ' + v.employee + ' — ' + v.uploadedAt);
+      s.append((v.status === 'deleted' ? (v.note || 'محذوف') + ' — ' : '') + v.employee + ' — ' + v.uploadedAt);
       el.append(t, s); el.onclick = () => pick(v, el); box.appendChild(el);
     });
   } catch (e) { box.textContent = 'خطأ: ' + e.message; }
@@ -144,18 +148,24 @@ function pick(v, el) {
   selected = v;
   document.querySelectorAll('.item').forEach(x => x.classList.remove('active')); el.classList.add('active');
   if (v.fileId) { $('frame').src = 'https://drive.google.com/file/d/' + encodeURIComponent(v.fileId) + '/preview'; $('frame').style.display = 'block'; $('ph').style.display = 'none'; }
-  else { $('frame').style.display = 'none'; $('ph').style.display = 'block'; $('ph').textContent = 'هذا الفيديو تم حذفه تلقائيًا لتوفير مساحة التخزين'; }
-  $('review-note').value = v.note || '';
-  $('review-meta').textContent = v.reviewer ? 'آخر قرار: ' + ({ approved: 'اعتماد', rejected: 'رفض' }[v.status]) + ' بواسطة ' + v.reviewer + ' — ' + v.reviewedAt : 'لم تتم مراجعة الفيديو بعد';
+  else { $('frame').style.display = 'none'; $('ph').style.display = 'block'; $('ph').textContent = 'هذا الفيديو محذوف: ' + (v.note || ''); }
 }
-async function review(status) {
-  if (!selected) return alert('اختر فيديو أولًا');
-  try { const d = await api('review', { id: selected.id, status, note: $('review-note').value.trim() });
-    $('review-meta').textContent = (status === 'approved' ? 'تم الاعتماد' : 'تم الرفض') + ' بواسطة ' + d.reviewer + ' — ' + d.reviewedAt;
-    selected = { ...selected, status, reviewer: d.reviewer, reviewedAt: d.reviewedAt }; search();
-  } catch (e) { alert(e.message); }
+async function openDash() {
+  $('dash').style.display = 'flex'; $('d-rows').innerHTML = '';
+  try {
+    const [d, s] = await Promise.all([api('storage'), api('search', { q: '' })]);
+    const gb = n => (n / 1073741824).toFixed(2), mb = n => (n / 1048576).toFixed(1);
+    $('d-storage').textContent = 'المستخدم ' + gb(d.used) + ' من ' + gb(d.limit) + ' جيجا — المتبقي ' + gb(d.limit - d.used) + ' جيجا';
+    $('d-bar').style.width = Math.min(100, d.used / d.limit * 100) + '%';
+    const map = {};
+    s.videos.forEach(v => { const c = map[v.company] || (map[v.company] = { n: 0, b: 0 }); c.n++; c.b += Number(v.size || 0); });
+    const names = Object.keys(map).sort((x, y) => map[y].n - map[x].n);
+    $('d-detail').textContent = s.videos.length >= 100 ? 'تنبيه: جدول الشركات محسوب من آخر 100 فيديو فقط' : '';
+    $('k-sent').textContent = d.videosCount; $('k-stored').textContent = names.length; $('k-mb').textContent = mb(d.videosBytes);
+    names.forEach(n => { const tr = document.createElement('tr'); [n, map[n].n, mb(map[n].b)].forEach(x => { const td = document.createElement('td'); td.textContent = x; tr.appendChild(td); }); $('d-rows').appendChild(tr); });
+    if (!names.length) { const tr = document.createElement('tr'), td = document.createElement('td'); td.colSpan = 3; td.textContent = 'لا توجد فيديوهات بعد'; tr.appendChild(td); $('d-rows').appendChild(tr); }
+  } catch (e) { $('d-storage').textContent = 'خطأ: ' + e.message; }
 }
-
 async function loadStorage() {
   try {
     const d = await api('storage'), gb = n => (n / 1073741824).toFixed(2), mb = n => (n / 1048576).toFixed(1);
@@ -192,17 +202,19 @@ async function uploadVideo() {
     if (!fileId) throw new Error('Drive لم يؤكد اكتمال الرفع');
     st.textContent = 'جارٍ الحفظ...';
     await api('finishUpload', { fileId, req });
-    st.textContent = 'تم رفع الفيديو بنجاح — الحالة: قيد المراجعة';
+    st.textContent = 'تم رفع الفيديو بنجاح';
     $('file-upload').value = ''; $('search-input').value = req; search();
   } catch (e) { st.textContent = 'فشل الرفع: ' + e.message; alert('فشل الرفع: ' + e.message); }
   finally { btn.disabled = false; }
 }
 
-const MT = { company_admin: ['إدارة حسابات الشركات', 'اسم الشركة'], reviewer: ['إدارة حسابات المراجعين', 'اسم المراجع'], employee: ['إدارة حسابات الموظفين', 'اسم الموظف'] };
-function openModal(role) { modalRole = role; $('m-title').textContent = MT[role][0]; $('m-name-l').textContent = MT[role][1]; ['m-name', 'm-user', 'm-pass'].forEach(i => $(i).value = ''); $('modal').style.display = 'flex'; loadUsers(); }
+const MT = { company_admin: ['إدارة حسابات الشركات', 'اسم الشركة'], reviewer: ['حساب المراجعين (يوزر واحد لكل مراجعي الهيئة)', 'اسم الحساب'], employee: ['إدارة حسابات الموظفين', 'اسم الموظف'] };
+function openModal(role) { modalRole = role; $('m-title').textContent = MT[role][0]; $('m-name-l').textContent = MT[role][1]; ['m-name', 'm-user', 'm-pass'].forEach(i => $(i).value = ''); $('m-form').style.display = (S.user.role === 'admin' && role === 'employee') ? 'none' : 'block'; $('modal').style.display = 'flex'; loadUsers(); }
 function closeModal() { $('modal').style.display = 'none'; }
 async function createUser() {
-  try { await api('createUser', { role: modalRole, name: $('m-name').value, username: $('m-user').value, password: $('m-pass').value });
+  try {
+    if (S.user.role === 'company_admin') { const l = await api('listUsers'); if (l.users.filter(u => u.role === 'employee').length >= 10) return alert('وصلت للحد الأقصى: 10 حسابات'); }
+    await api('createUser', { role: modalRole, name: $('m-name').value, username: $('m-user').value, password: $('m-pass').value });
     ['m-name', 'm-user', 'm-pass'].forEach(i => $(i).value = ''); loadUsers(); } catch (e) { alert(e.message); }
 }
 async function loadUsers() {
@@ -211,13 +223,14 @@ async function loadUsers() {
     const d = await api('listUsers'); box.innerHTML = '';
     d.users.filter(u => u.role === modalRole).forEach(u => {
       const el = document.createElement('div'); el.className = 'urow';
-      const t = document.createElement('span'); t.textContent = u.name + ' (' + u.username + ')' + (u.active ? '' : ' — موقوف');
+      const t = document.createElement('span'); t.textContent = u.name + ' (' + u.username + ')' + (S.user.role === 'admin' && u.role === 'employee' ? ' — ' + u.company : '') + (u.active ? '' : ' — موقوف');
       const a = document.createElement('button'); a.className = 'btn ' + (u.active ? 'danger' : 'ok'); a.textContent = u.active ? 'إيقاف' : 'تفعيل';
       a.onclick = async () => { try { await api('setActive', { username: u.username, active: !u.active }); loadUsers(); } catch (e) { alert(e.message); } };
       const p = document.createElement('button'); p.className = 'btn'; p.textContent = 'كلمة مرور';
       p.onclick = async () => { const np = prompt('كلمة المرور الجديدة'); if (!np) return; try { await api('resetPass', { username: u.username, password: np }); alert('تم التغيير'); } catch (e) { alert(e.message); } };
       el.append(t, a, p); box.appendChild(el);
     });
+    $('m-count').textContent = (S.user.role === 'company_admin') ? 'عدد الحسابات: ' + box.children.length + ' من 10' : '';
     if (!box.children.length) box.textContent = 'لا توجد حسابات بعد';
   } catch (e) { box.textContent = e.message; }
 }
